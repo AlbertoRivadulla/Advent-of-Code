@@ -1,0 +1,12 @@
+[
+{
+  "directory": "/home/albertor/Datos/Programming/Advent_of_code_2020/test/build",
+  "command": "/usr/bin/c++  -I/home/albertor/Datos/Programming/Advent_of_code_2020/test  -o CMakeFiles/main.dir/algo.cpp.o -c /home/albertor/Datos/Programming/Advent_of_code_2020/test/algo.cpp",
+  "file": "/home/albertor/Datos/Programming/Advent_of_code_2020/test/algo.cpp"
+},
+{
+  "directory": "/home/albertor/Datos/Programming/Advent_of_code_2020/test/build",
+  "command": "/usr/bin/c++  -I/home/albertor/Datos/Programming/Advent_of_code_2020/test  -o CMakeFiles/main.dir/main.cpp.o -c /home/albertor/Datos/Programming/Advent_of_code_2020/test/main.cpp",
+  "file": "/home/albertor/Datos/Programming/Advent_of_code_2020/test/main.cpp"
+}
+]

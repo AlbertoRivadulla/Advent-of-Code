@@ -1,134 +1,153 @@
+import time
 import re
+import heapq
 
-class AmphipodHouse:
-    def __init__( self, filename ):
+# Function to parse the map into a state tuple
+def parse_initial_state( lines ):
+    # Initialize the state with the empty corridor
+    initial_state = [ [0] for _ in range(11) ]
 
-        # Names of the amphipods
-        self.amphipod_names = ['A', 'B', 'C', 'D']
+    # Read the positions of the amphipods in the rooms
+    #   A -> 1
+    #   B -> 2
+    #   C -> 3
+    #   D -> 4
+    for line in lines[ 2 : len(lines) - 1 ]:
+        for i in range( 2, 9, 2 ):
+            initial_state[i].append( ord(line[i+1]) - ord("A") + 1 )
 
-        # Length of the corridor
-        self.corridor_len = 0
-        # Corridor
-        self.corridor = []
+    # Convert the state to a tuple of tuples, so it can be used as a key to a dic,
+    # and return it
+    return tuple( tuple( column ) for column in initial_state )
 
-        # Positions of the rooms in the corridor
-        self.rooms_positions = [ 2, 4, 6, 8 ]
-        # Positions of the amphipods in the rooms
-        self.amphipods_in_rooms = [ [] for _ in range( 4 ) ]
+# Function to check if all the amphipods are located in their rooms
+def check_all_sorted( state ):
+    # a iterates over the values of the amphipods ( ( 1, 2, 3, 4 ), corresponding
+    # to ( A, B, C, D ) )
+    # 2*a is the index of the room that they should be located in
+    return all( all( a == b for b in state[2*a][1:] ) for a in range( 1, 5 ) )
 
-        # Energy for moving each amphiphod
-        self.amphipod_energy_cost = { 'A': 1,
-                                      'B': 10,
-                                      'C': 100,
-                                      'D': 1000
-                                     }
-        # Destination rooms of the amphipods
-        self.amphipod_destination = { 'A': 0,
-                                      'B': 1,
-                                      'C': 2,
-                                      'D': 3
-                                     }
+# Function to get the next possible movements from a current state
+def get_next_movements( state ):
+    # Initialize lists of movements
+    priority_moves, other_moves = [], []
 
-        # Read the initial configuration
-        self.read_initial_conf( filename )
+    # Iterate over the columns of the current state
+    for i1, src_col in enumerate( state ):
 
-        # Minimum energy
-        self.minimum_energy = 1000000000000
+        # Only consider the locations where there is an amphipod (this is, a != 0)
+        # in the following loop
+        for j1, amph in enumerate( src_col ):
+            if amph:
+                break
+        else:
+            # If there is no amphipod in this column, continue to the next one
+            continue
 
-        # State of the system
-        # The last number is the energy of the current state
-        self.state = [ self.corridor, self.amphipods_in_rooms, 0 ]
+        # If the amphipod is at its corresponding room and there are no other 
+        # different amphipods in the current room, continue.
+        if i1 == 2*amph and not any( b and b != amph for b in src_col ):
+            continue
 
-    # Print the configurations
-    def __str__( self ):
-        return str( self.state )
+        # Iterate over the state to find the possible destination
+        for i2, dst_col in enumerate( state ):
+            # If I am at the source room or the corridor to get to the destination
+            # is blocked, continue
+            if i1 == i2 or any( state[i3][0] for i3 in ( range(i1 + 1, i2) if i1 < i2 else \
+                                                         range(i2 + 1, i1) ) ):
+                continue
 
-    # Check if the state is sorted
-    def check_sorted( self, state ):
-        for i in range( len( self.amphipod_names ) ):
-            for j in range( len( state[1][i] ) ):
-                if state[1][i][j] != self.amphipod_names[i]:
-                    return False
-        return True
+            # Find the first empty position in the destination column, starting
+            # from the bottom.
+            for j2 in range( len( dst_col ) - 1, -1, -1 ):
+                if not dst_col[ j2 ]:
+                    break
+            # If there is no available position, continue to the next possible
+            # destination column.
+            else:
+                continue
 
-    # Read the initial configuration from a file
-    def read_initial_conf( self, filename ):
-        with open( filename, "r" ) as f:
-            for line in f:
-                # Corridor
-                match = re.findall( r"\#([\.]+)\#", line )
-                if len( match ) > 0:
-                    self.corridor_len = len( match[0].strip() )
-                    self.corridor = [ ' ' for _ in range( self.corridor_len )]
-                    continue
+            # If this movement leaves the amphipod at its corresponding room,
+            # add it to the list of prioritary movements
+            if i2 == 2 * amph:
+                if all( not b or b == amph for b in dst_col ):
+                    priority_moves.append( ( amph, i1, j1, i2, j2 ) )
 
-                # Rooms
-                match = re.findall( r"\#+([ABCD])\#([ABCD])\#([ABCD])\#([ABCD])\#+", line )
-                if len( match ) > 0:
-                    for i in range(len(match[0])):
-                        self.amphipods_in_rooms[i].append( match[0][i] )
-                    continue
+            # Else, if the destination is a corridor location that is not 
+            # directly in front to a room and the destination position is empty, 
+            # add it to the list of non-prioritary movements
+            elif i2 not in range( 2, 9, 2 ):
+                if i1 in range( 2, 9, 2 ) and not dst_col[0]:
+                    other_moves.append( ( amph, i1, j1, i2, j2 ) )
 
-    # Get the lisf of available movements for the current state
-    def get_available_movements( self, state ):
-        available_movements = []
+            # The other two options would be:
+            #   - Amphipod moving to a room other than its destination.
+            #   - Amphipod moving to a corridor location right in front of a room.
+            # These two are forbidden, so I do not consider them
 
-        # Each movement only moves one amphipod
-        # It is a list of 2 lists with 2/3 elements
-        #   first list: current position
-        #   second list: next position
-        # If one of the positions is at the corridor:
-        #   list = [ 0, pos_in_corridor ]
-        # If one of the positions is at one room:
-        #   list = [ 1, room_nr, pos_at_room ]
+    return priority_moves, other_moves
 
+# Function to solve the system, finding the minimum energy necessary to sort the
+# amphipods in their rooms
+def find_minimum_energy( initial_state ):
+    # Dictionary of visited state
+    #   { state : energy cost }
+    # Notice that state is a tuple, so it can be used as a key to the dictionary
+    visited = { initial_state : 0 }
 
-        return available_movements
+    # Queue of states to visit
+    # I initialize this with a list, which then will be treated as a heap
+    #   ( energy cost, state )
+    states_queue = [ ( 0, initial_state ) ]
 
-    # Evolve the system until all the amphipods are sorted
-    def evolve( self ):
+    # Propagate the states in the queue
+    while states_queue:
 
-        # Queue of movements
+        # Get the next state from the queue and the cost for getting to that state.
+        # This always gets the smallest element (the one with the smallest first 
+        # value, the energy cost).
+        _, state = heapq.heappop( states_queue )
+        cost = visited[ state ]
 
-        # Add the possible movements to the queue
+        # Check if all amphipods are located in their corresponding room.
+        # If they are, the best configuration has been found.
+        if check_all_sorted( state ):
+            # Return the result
+            return cost
 
-        while True:
-        # while len( next_movements ) > 0:
+        # Get the next movements
+        priority_moves, other_moves = get_next_movements( state )
 
-            # Pop a movement from the queue and apply it
+        # Compute the cost of the movements and save them for the next iteration.
+        # If there are prioritary movements, only consider the first of them (the
+        # one that moves the amphipod with the lowest cost).
+        for a, i1, j1, i2, j2 in [ priority_moves[0] ] if priority_moves else other_moves:
+            # Compute the new cost.
+            # The cost per step is:
+            #   A -> 1
+            #   B -> 10
+            #   C -> 100
+            #   D -> 1000
+            new_cost = cost + 10 ** ( a - 1 ) * ( abs(i1 - i2) + j1 + j2 )
 
-                # If I reached the end configuration and the energy after this is
-                # less than the minimum, update the minimum energy
+            # Convert the state to a list and update it
+            new_state = [ list( col ) for col in state ]
+            new_state[ i1 ][ j1 ] = 0
+            new_state[ i2 ][ j2 ] = a
+            # Convert the list back to a tuple
+            new_state = tuple( tuple( col ) for col in new_state )
 
-                # If the energy after a movement is larger than the minimum one,
-                # stop applying it
+            # If the state has not been visited or it had been visited before with
+            # a larger energy cost, mark it as visited and add it to the heap.
+            if new_state not in visited or visited[ new_state ] > new_cost:
+                visited[ new_state ] = new_cost
+                heapq.heappush( states_queue, ( new_cost, new_state ) )
 
-                # Else, get the list of possible movements after this one and add 
-                # them to the queue
+                # print( states_queue )
 
-            # If the 
+                # print( states_queue.sort() )
+                # print( states_queue )
 
-            break
-
-        return
-
-
-
-'''
-    Amphipods will never stop on the space immediately outside any room. 
-    They can move into that space so long as they immediately continue moving. 
-    (Specifically, this refers to the four open spaces in the hallway that are directly above an amphipod starting position.)
-
-    Amphipods will never move from the hallway into a room unless that room is their destination room 
-    and that room contains no amphipods which do not also have that room as their own destination. 
-    If an amphipod's starting room is not its destination room, it can stay in that room until it leaves the room. 
-    (For example, an Amber amphipod will not move from the hallway into the right three rooms, 
-    and will only move into the leftmost room if that room is empty or if it only contains other Amber amphipods.)
-
-    Once an amphipod stops moving in the hallway, it will stay in that spot until it can move into a room. 
-    (That is, once any amphipod starts moving, any other amphipods currently in the hallway are locked in place 
-    and will not move again until they can move fully into a room.)
-'''
 
 
 
@@ -136,33 +155,25 @@ class AmphipodHouse:
 # First part
 ################################################################################
 
-
-# Procedure:
-
-    # In each step, get a list of possible movements
-        # If there are no available movements, stop
-
-    # Recursively apply each movement, continuing the process
-
-    # Always keep track of the minimum energy
-    # For this, the entire process can be written in a class (instead of a global variable for the energy)
-
-    # If after some movement the energy becomes more than the minimum, discard it
+start_time = time.time()
 
 
-# Setup the system
-amphipod_house = AmphipodHouse( "input.txt" )
+# Read the map from the file
+file_lines = []
+with open( "input.txt", "r" ) as f:
+    for line in f:
+        file_lines.append( line )
 
-# Evolve the system
-amphipod_house.evolve()
+# Parse it into a state tuple
+initial_state = parse_initial_state( file_lines )
 
-print( amphipod_house )
-
-print( amphipod_house.check_sorted( amphipod_house.state ))
+# Compute the minimum energy to sort the amphipods
+minimum_energy = find_minimum_energy( initial_state )
 
 
 print("\n\n--------------\nFirst part\n\n")
-print("The minimum energy to sort them is: {}".format( amphipod_house.minimum_energy ))
+print("\t--- Execution time: {:.5} s ---\n\n".format(time.time() - start_time))
+print("The minimum energy to sort them is: {}".format( minimum_energy ))
 
 
 
@@ -170,5 +181,29 @@ print("The minimum energy to sort them is: {}".format( amphipod_house.minimum_en
 # Second part
 ################################################################################
 
+start_time = time.time()
+
+# New lines of the map
+new_lines = \
+'''  #D#C#B#A#
+  #D#B#A#C#'''.split('\n')
+# Last two lines of the map
+last_two_lines = [ file_lines.pop() for _ in range( 2 ) ]
+last_two_lines.reverse()
+# Insert the new lines
+for new_line in new_lines:
+    file_lines.append( new_line )
+# Insert the previous last lines again
+for line in last_two_lines:
+    file_lines.append( line )
+
+# Parse it into a state tuple
+initial_state = parse_initial_state( file_lines )
+
+# Compute the minimum energy to sort the amphipods
+minimum_energy = find_minimum_energy( initial_state )
+
 
 print("\n\n--------------\nSecond part\n\n")
+print("\t--- Execution time: {:.5} s ---\n\n".format(time.time() - start_time))
+print("The minimum energy to sort them is: {}".format( minimum_energy ))

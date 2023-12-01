@@ -1,169 +1,97 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
+import time
 import re
-import itertools as it
-import numpy as np
 
-def decimalToBinary(nr, length):
-    binaryDigits = [0] * length
-    quotient = nr
-    remainder = 0
-    index = 0
+# Read the starting numbers
+starting_nrs = []
+with open( "input.txt", "r" ) as f:
+    numbers = f.readline().strip().split(',')
+    starting_nrs = [ int( nr ) for nr in numbers ]
 
-    while quotient != 0:
-        # Get the remainder of the division by two
-        remainder = quotient % 2
-        # Divide the number by two
-        quotient = quotient // 2
-        # Add the remainder to the list of binary digits
-        # binaryDigits.append(remainder)
-        binaryDigits[ - 1 - index ] = remainder
-        # Move the index
-        index += 1
+################################################################################
+# First part
+################################################################################
 
-    # # Invert the order of the list
-    # binaryDigits.reverse()
-    #
-    return binaryDigits
+start_time = time.time()
 
-def binaryToDecimal(binaryDigits):
-    decimalValue = 0
+# Dictionary of the spoken numbers and the last turn they have been spoken
+spoken_nrs = {}
 
-    for i in range(len(binaryDigits)):
-        decimalValue += binaryDigits[- 1 - i] * 2 ** i
+# Speak the starting numbers
+for i in range( len( starting_nrs ) - 1 ):
+    spoken_nrs[ starting_nrs[i] ] = i + 1
+# Save the last of the starting numbers as the last spoken number, for the next
+# turn
+last_nr = starting_nrs[ -1 ]
 
-    return decimalValue
+# Continue playing until reaching 2020 turns
+for turn in range( len(starting_nrs) + 1, 2021 ):
+# for turn in range( len(starting_nrs) + 1, 11 ):
+    # print( "\nTurn {}".format( turn ) )
 
-def applyMask(binaryDigits, mask):
-    for i in range(len(binaryDigits)):
-        if mask[i] == "X":
-            continue
-        elif mask[i] == "0":
-            binaryDigits[i] = 0
-        elif mask[i] == "1":
-            binaryDigits[i] = 1
-    return binaryDigits
+    # Copy the last number
+    last_nr_copy = last_nr
 
-# Read the mask and values
-memoryAndValues = []
-with open("input.txt", "r") as f:
-    currentMask = ""
-    for line in f:
-        # Check if the line contains a mask
-        readMask = re.findall(r"mask\s=\s([\w]+)", line)
-        if len(readMask) == 1:
-            currentMask = readMask[0]
-            continue
-        # Otherwise, the line is a value for the memory
-        memoryLine = [int(nr) for nr in re.findall(r"mem\[([\d]+)\]\s=\s([\d]+)", line)[0] ]
-        # Convert the value in memory to binary
-        binaryDigits = decimalToBinary(memoryLine[1], len(currentMask))
-        # Apply the mask
-        binaryDigits = applyMask(binaryDigits, currentMask)
-        # Convert the number back to decimal
-        memoryLine[1] = binaryToDecimal(binaryDigits)
-        # Append this to the memory array
-        memoryAndValues.append(memoryLine)
+    # Check if this was the first time the last number was spoken
+    if last_nr not in spoken_nrs:
+        # If it was the first time, speak 0
+        last_nr = 0
+    else:
+        # Speak the difference between the previous turn and the turn where it
+        # was previously spoken
+        last_nr = turn - 1 - spoken_nrs[ last_nr ]
 
-# Get the maximum index in memory
-memoryLength = 0
-for register in memoryAndValues:
-    if register[0] > memoryLength:
-        memoryLength = register[0]
+    # Save the last spoken number
+    spoken_nrs[ last_nr_copy ] = turn - 1
 
-# Create an array of memoryLength with the current values in memory
-memory = [ 0 ] * (memoryLength + 1)
-for register in memoryAndValues:
-    memory[ register[0] ] = register[1]
+    # print( last_nr )
 
-# Compute the sum of the values in memory
-sumMemory = sum(memory)
+print("\n\n--------------\nFirst part\n--------------")
+print("\t--- Execution time: {:.5} s ---\n\n".format(time.time() - start_time))
+print("The last number spoken after 2020 turns is {}".format( last_nr ))
 
-print("Sum of the values in memory: {}".format(sumMemory))
-print("\n----------\n")
 
-def applyMaskAddress(binaryDigits, mask):
-    for i in range(len(binaryDigits)):
-        if mask[i] == "X":
-            binaryDigits[i] = "X"
-        elif mask[i] == "0":
-            # binaryDigits[i] = 0
-            continue
-        elif mask[i] == "1":
-            binaryDigits[i] = 1
-    return binaryDigits
 
-def getMemoryAddresses(binaryAddress):
-    memoryAddresses = []
+################################################################################
+# Second part
+################################################################################
 
-    # Find the first floating bit "X"
-    indexFirstFloating = len(binaryAddress)
-    for i in range(len(binaryAddress)):
-        if binaryAddress[i] == "X":
-            indexFirstFloating = i
-            break
 
-    # If there is no floating bit, return the address
-    if indexFirstFloating == len(binaryAddress):
-        return [ binaryAddress ]
+start_time = time.time()
 
-    # Add the addresses obtained by replacing this bit first by 1 and then by 0
-    replacedBinaryAddress = binaryAddress[:]
-    replacedBinaryAddress[indexFirstFloating] = 1
-    subMemoryAddresses = getMemoryAddresses(replacedBinaryAddress)
-    for address in subMemoryAddresses:
-        memoryAddresses.append(address)
+# Dictionary of the spoken numbers and the last turn they have been spoken
+spoken_nrs = {}
 
-    replacedBinaryAddress = binaryAddress[:]
-    replacedBinaryAddress[indexFirstFloating] = 0
-    subMemoryAddresses = getMemoryAddresses(replacedBinaryAddress)
-    for address in subMemoryAddresses:
-        memoryAddresses.append(address)
+# Speak the starting numbers
+for i in range( len( starting_nrs ) - 1 ):
+    spoken_nrs[ starting_nrs[i] ] = i + 1
+# Save the last of the starting numbers as the last spoken number, for the next
+# turn
+last_nr = starting_nrs[ -1 ]
 
-    return memoryAddresses
+# Continue playing until reaching 2020 turns
+for turn in range( len(starting_nrs) + 1, 30000001 ):
+# for turn in range( len(starting_nrs) + 1, 11 ):
 
-# Read the mask and values
-memoryAndValues = []
-with open("input.txt", "r") as f:
-    currentMask = ""
-    for line in f:
-        # Check if the line contains a mask
-        readMask = re.findall(r"mask\s=\s([\w]+)", line)
-        if len(readMask) == 1:
-            currentMask = readMask[0]
-            continue
-        # Otherwise, the line is a value for the memory
-        memoryLine = [int(nr) for nr in re.findall(r"mem\[([\d]+)\]\s=\s([\d]+)", line)[0] ]
-        # Convert the address to binary
-        binaryAddress = decimalToBinary(memoryLine[0], len(currentMask))
-        # Apply the mask to the address
-        binaryAddress = applyMaskAddress(binaryAddress, currentMask)
+    if turn % 1000000 == 0:
+        print( "Turn {}".format( turn ) )
 
-        # Get the different binary addresses that this produces
-        binaryAddresses = getMemoryAddresses(binaryAddress)
+    # Copy the last number
+    last_nr_copy = last_nr
 
-        # Write the value to all these addresses
-        for address in binaryAddresses:
-            memoryAndValues.append( [ binaryToDecimal(address), memoryLine[1] ] )
+    # Check if this was the first time the last number was spoken
+    if last_nr not in spoken_nrs:
+        # If it was the first time, speak 0
+        last_nr = 0
+    else:
+        # Speak the difference between the previous turn and the turn where it
+        # was previously spoken
+        last_nr = turn - 1 - spoken_nrs[ last_nr ]
 
-# # Get the maximum index in memory
-# memoryLength = 0
-# for register in memoryAndValues:
-#     if register[0] > memoryLength:
-#         memoryLength = register[0]
-#
-# # Create an array of memoryLength with the current values in memory
-# memory = [ 0 ] * (memoryLength + 1)
-# for register in memoryAndValues:
-#     memory[ register[0] ] = register[1]
+    # Save the last spoken number
+    spoken_nrs[ last_nr_copy ] = turn - 1
 
-# Compute the sum of the values in memory
-visitedAddresses = []
-sumMemory = 0
-for i in range(len(memoryAndValues)):
-    if memoryAndValues[-1-i][0] not in visitedAddresses:
-        visitedAddresses.append(memoryAndValues[-1-i][0])
-        sumMemory += memoryAndValues[-1-i][1]
+    # print( last_nr )
 
-print("Sum of the values in memory: {}".format(sumMemory))
+print("\n\n--------------\nSecond part\n--------------")
+print("\t--- Execution time: {:.5} s ---\n\n".format(time.time() - start_time))
+print("The last number spoken after 30000000 turns is {}".format( last_nr ))

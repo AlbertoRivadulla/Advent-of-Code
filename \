@@ -1,0 +1,81 @@
+const fs = require('fs');
+
+
+
+// Read the data
+let almanac = fs.readFileSync('input.txt', 'utf-8').trim();
+
+// Separate the seeds and the different maps in the almanac
+almanac = almanac.split('\n\n');
+
+// Seed numbers
+let seeds = almanac[0].match(/\d+/g).map( (seed) => Number(seed) );
+
+// Read the different maps
+let maps = [];
+for ( let i = 1; i < almanac.length; ++i ) {
+
+  console.log('===============================')
+  let thisAlmanacMap = almanac[i].split('\n');
+  let thisMap = [];
+
+  for ( const line of thisAlmanacMap.slice(1) ) {
+    const theseNrs = line.match(/\d+/g).map( (nr) => Number(nr) );
+
+    thisMap.push( {
+      destStart   : theseNrs[0],
+      sourceStart : theseNrs[1],
+      rangeLenght : theseNrs[2]
+    } );
+
+    console.log(line);
+  }
+
+  maps.push(thisMap);
+
+  console.log(almanac[i]);
+  console.log(thisAlmanacMap);
+  console.log(thisMap);
+}
+
+
+
+
+console.log(almanac);
+
+console.log(seeds);
+
+console.log(maps);
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// First part
+////////////////////////////////////////////////////////////////////////////////
+
+let startTime = Date.now();
+
+
+
+
+
+
+console.log("\n\n--------------\nFirst part\n--------------");
+console.log(`\t--- Execution time: ${(Date.now() - startTime)/1000} s ---\n\n`);
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Second part
+////////////////////////////////////////////////////////////////////////////////
+
+startTime = Date.now();
+
+
+
+
+console.log("\n\n--------------\nSecond part\n--------------");
+console.log(`\t--- Execution time: ${(Date.now() - startTime)/1000} s ---\n\n`);
+

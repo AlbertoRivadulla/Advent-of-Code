@@ -40,7 +40,7 @@ public class Main {
 
 
 
-    System.out.println("\n\n--------------\nFirst part\n--------------");
+    System.out.println("\n\n--------------\nSecond part\n--------------");
     System.out.println("\t--- Execution time: " + (System.currentTimeMillis() - startTime) + " ms ---\n\n");
   }
 }

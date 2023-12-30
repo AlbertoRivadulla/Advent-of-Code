@@ -1,3 +1,0 @@
-/home/albertor/Datos/Programming/Advent_of_code_2020/test/build/CMakeFiles/rebuild_cache.dir
-/home/albertor/Datos/Programming/Advent_of_code_2020/test/build/CMakeFiles/edit_cache.dir
-/home/albertor/Datos/Programming/Advent_of_code_2020/test/build/CMakeFiles/main.dir

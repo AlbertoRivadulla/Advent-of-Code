@@ -2,15 +2,17 @@ CC = gcc
 CFLAGS = -Wall -Wextra -std=c11
 # LDFLAGS = 
 
-INCLUDE_DIRS = library
+LIB_DIR = ../library
+
+INCLUDE_DIRS = $(LIB_DIR)
 OBJ_DIR = .build
 
 MAIN_SRC = main.c
-LIB_SRC = $(wildcard library/*.c)
+LIB_SRC = $(wildcard $(LIB_DIR)/*.c)
 SOURCES = $(MAIN_SRC) $(LIB_SRC)
 
 OBJECTS = $(MAIN_SRC:%.c=$(OBJ_DIR)/%.o) \
-		  $(LIB_SRC:%.c=$(OBJ_DIR)/%.o)
+		  $(LIB_SRC:$(LIB_DIR)/%.c=$(OBJ_DIR)/library/%.o)
 
 TARGET = main
 
@@ -29,7 +31,7 @@ $(TARGET): $(OBJECTS)
 $(OBJ_DIR)/main.o: main.c | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -I $(INCLUDE_DIRS) -c $< -o $@
 
-$(OBJ_DIR)/library/%.o: library/%.c | $(OBJ_DIR)/library
+$(OBJ_DIR)/library/%.o: $(LIB_DIR)/%.c | $(OBJ_DIR)/library
 	$(CC) $(CFLAGS) -I $(INCLUDE_DIRS) -c $< -o $@
 
 $(OBJ_DIR):

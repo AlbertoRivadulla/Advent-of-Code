@@ -1,0 +1,53 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-std=c11",
+      "-I",
+      "../library",
+      "-c",
+      "-o",
+      ".build/main.o",
+      "main.c"
+    ],
+    "directory": "/Users/albertorivadullasanchez/Datos/Programming/Advent_of_code/2025/template",
+    "file": "/Users/albertorivadullasanchez/Datos/Programming/Advent_of_code/2025/template/main.c",
+    "output": "/Users/albertorivadullasanchez/Datos/Programming/Advent_of_code/2025/template/.build/main.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-std=c11",
+      "-I",
+      "../library",
+      "-c",
+      "-o",
+      ".build/library/timer.o",
+      "../library/timer.c"
+    ],
+    "directory": "/Users/albertorivadullasanchez/Datos/Programming/Advent_of_code/2025/template",
+    "file": "/Users/albertorivadullasanchez/Datos/Programming/Advent_of_code/2025/library/timer.c",
+    "output": "/Users/albertorivadullasanchez/Datos/Programming/Advent_of_code/2025/template/.build/library/timer.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-Wextra",
+      "-std=c11",
+      "-I",
+      "../library",
+      "-c",
+      "-o",
+      ".build/library/utils.o",
+      "../library/utils.c"
+    ],
+    "directory": "/Users/albertorivadullasanchez/Datos/Programming/Advent_of_code/2025/template",
+    "file": "/Users/albertorivadullasanchez/Datos/Programming/Advent_of_code/2025/library/utils.c",
+    "output": "/Users/albertorivadullasanchez/Datos/Programming/Advent_of_code/2025/template/.build/library/utils.o"
+  }
+]

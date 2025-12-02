@@ -50,5 +50,8 @@ show:
 	@echo "Sources " $(SOURCES)
 	@echo "Objects " $(OBJECTS)
 
+compile_commands.json: clean
+	bear -- $(MAKE)
+
 .PHONY:
 	all clean rebuild show

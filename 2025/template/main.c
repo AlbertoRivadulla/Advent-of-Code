@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <time.h>
-
 #include "timer.h"
 #include "regex_utils.h"
 

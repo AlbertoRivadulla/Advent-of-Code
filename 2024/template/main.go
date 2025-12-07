@@ -28,7 +28,7 @@ func firstPart(inputFileName string) {
 	// TODO:
 }
 
-func secondPart(input_file string) {
+func secondPart(inputFileName string) {
 	defer lib.Timer("Second part")()
 
 	// TODO:

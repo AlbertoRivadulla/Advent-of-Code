@@ -123,6 +123,10 @@ void first_part(char *input_file_name) {
     // }
 
     int nr_fresh = count_ids_in_ranges(id_ranges, nr_id_ranges, ids, nr_ids);
+
+    free(id_ranges);
+    free(ids);
+
     printf("Number of fresh ingredients: %d\n", nr_fresh);
 }
 
@@ -177,6 +181,8 @@ unsigned long long count_total_ids_in_ranges(IdRange *id_ranges, size_t nr_id_ra
         nr_ids_in_ranges += (unsigned long long)id_ranges[i].end - (unsigned long long)id_ranges[i].start + 1ull;
     }
 
+    free(merged);
+
     return nr_ids_in_ranges;
 }
 
@@ -199,6 +205,10 @@ void second_part(char *input_file_name) {
     // }
 
     unsigned long long nr_fresh_ids = count_total_ids_in_ranges(id_ranges, nr_id_ranges);
+
+    free(id_ranges);
+    free(ids);
+
     printf("Total nr of IDs of fresh ingredients %llu\n", nr_fresh_ids);
 }
 

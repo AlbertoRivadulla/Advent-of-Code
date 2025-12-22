@@ -2,3 +2,5 @@
 **/.cache/
 **/main
 **/compile_commands.json
+**/example_input.txt
+**/input.txt
